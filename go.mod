@@ -3,7 +3,7 @@ module github.com/andrescosta/jobico
 go 1.21.4
 
 require (
-	github.com/andrescosta/goico v0.6.3-0.20240317162727-c2f9d7281c77
+	github.com/andrescosta/goico v0.6.3-0.20240319145627-c5321e08c4fe
 	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/gorilla/mux v1.8.1
 	github.com/nxadm/tail v1.4.11

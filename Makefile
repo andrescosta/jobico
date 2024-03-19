@@ -307,3 +307,6 @@ expvarmon-local:
 
 dashboard-k8s:
 	@$(DASHBORD_CMD) -sync -debug --env:ctl.host=ctl:443 --env:repo.host=repo:443 --env:recorder.host=recorder:443 --env:listener.host=listener:443 --env:executor.host=exec:443
+
+dashboard-local:
+	@$(DASHBORD_CMD) -sync -debug --env:ctl.host=127.0.0.1:50052 --env:repo.host=127.0.0.1:50053 --env:recorder.host=127.0.0.1:50054 --env:listener.host=127.0.0.1:8080 --env:executor.host=127.0.0.1:9595

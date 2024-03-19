@@ -156,5 +156,22 @@
             "-debug",
         ]
     },
+    {
+        "name": "Launch Dashboard K8s",
+        "type": "go",
+        "request": "launch",
+        "mode": "debug",
+        "program": "${workspaceFolder}/cmd/dashboard/dashboard.go",
+        "console": "integratedTerminal",
+        "args": [
+            "-sync",
+            "-debug",
+            "--env:ctl.host=ctl:443", 
+            "--env:repo.host=repo:443", 
+            "--env:recorder.host=recorder:443", 
+            "--env:listener.host=listener:443", 
+            "--env:executor.host=exec:443",
+        ]
+    },
 ]
 }

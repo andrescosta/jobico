@@ -18,9 +18,10 @@ spec:
         image: jobico/ctl:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 50052
-          hostPort: 50052
-          protocol: TCP
+        - name: api
+          containerPort: 50052
+        - name: pprof
+          containerPort: 6060
         volumeMounts:
         - name: ctl-data
           mountPath: /usr/share/jobico/ctl
@@ -121,8 +122,12 @@ spec:
   selector:
     app: ctl
   ports:
-  - port: 50052
-    protocol: TCP
+  - name: api
+    port: 50052
+    targetPort: api
+  - name: pprof
+    port: 6060
+    targetPort: pprof
   type: ClusterIP
 
 ---
@@ -133,7 +138,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-  name: ctl-ingress
+  name: ctl-ingress-grpc
   namespace: jobico
 spec:
   ingressClassName: nginx
@@ -152,3 +157,28 @@ spec:
                 name: ctl
                 port:
                   number: 50052
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  name: ctl-ingress-http
+  namespace: jobico
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - ctl
+      secretName: ctl-cert
+  rules:
+    - host: ctl
+      http:
+        paths:
+          - path: /debug/
+            pathType: Prefix
+            backend:
+              service:
+                name: ctl
+                port:
+                  number: 6060

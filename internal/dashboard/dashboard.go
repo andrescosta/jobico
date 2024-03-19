@@ -2,14 +2,12 @@ package dashboard
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/andrescosta/goico/pkg/collection"
-	"github.com/andrescosta/goico/pkg/env"
 	"github.com/andrescosta/goico/pkg/service"
 	"github.com/andrescosta/goico/pkg/service/grpc"
 	"github.com/andrescosta/goico/pkg/service/grpc/svcmeta"
@@ -52,13 +50,6 @@ type Dashboard struct {
 }
 
 func New(ctx context.Context, d service.GrpcDialer, name string, sync bool) (*Dashboard, error) {
-	loaded, _, err := env.Load(name)
-	if err != nil {
-		return nil, err
-	}
-	if !loaded {
-		return nil, errors.New(".env files were not loaded")
-	}
 	controlCli, err := client.NewCtl(ctx, d)
 	if err != nil {
 		return nil, err

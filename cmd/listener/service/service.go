@@ -46,6 +46,7 @@ func New(ctx context.Context, ops ...Setter) (*Service, error) {
 		http.WithContext(ctx),
 		http.WithName(name),
 		http.WithProfilingEnabled(env.Bool("prof.enabled", false)),
+		http.WithPProfAddr(env.StringOrNil("pprof.addr")),
 		http.WithHealthCheckFn[*http.ServiceOptions](func(_ context.Context) (map[string]string, error) {
 			return make(map[string]string), nil
 		}),

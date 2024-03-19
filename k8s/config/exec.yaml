@@ -15,9 +15,8 @@ spec:
         image: jobico/exec:latest
         imagePullPolicy: Never
         ports:
-          - containerPort: 8585
-            hostPort: 8585
-            protocol: TCP
+        - name: api
+          containerPort: 8585
         env:
         - name: executor.addr
           valueFrom:
@@ -151,8 +150,34 @@ spec:
   selector:
     app: exec
   ports:
-    - port: 8585
-      protocol: TCP
+    - name: api
+      port: 8585
+      targetPort: 8585
   type: ClusterIP
 
 ---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  name: exec-ingress-http
+  namespace: jobico
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - exec
+      secretName: exec-cert
+  rules:
+    - host: exec
+      http:
+        paths:
+          - path: /debug/
+            pathType: Prefix
+            backend:
+              service:
+                name: exec
+                port:
+                  number: 8585

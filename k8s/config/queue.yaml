@@ -18,9 +18,10 @@ spec:
         image: jobico/queue:latest
         imagePullPolicy: Never
         ports:
-          - containerPort: 50051
-            hostPort: 50051
-            protocol: TCP
+        - name: api
+          containerPort: 50051
+        - name: pprof
+          containerPort: 6060
         volumeMounts:
           - name: queue-data
             mountPath: /usr/share/jobico/queue
@@ -127,8 +128,12 @@ spec:
   selector:
     app: queue
   ports:
-    - port: 50051
-      protocol: TCP
+    - name: api
+      port: 50051
+      targetPort: api
+    - name: pprof
+      port: 6060
+      targetPort: pprof
   type: ClusterIP
 
 ---
@@ -139,7 +144,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-  name: queue-ingress
+  name: queue-ingress-grpc
   namespace: jobico
 spec:
   ingressClassName: nginx
@@ -158,3 +163,30 @@ spec:
                 name: queue
                 port:
                   number: 50051
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  name: queue-ingress-http
+  namespace: jobico
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - queue
+      secretName: queue-cert
+  rules:
+    - host: queue
+      http:
+        paths:
+          - path: /debug/
+            pathType: Prefix
+            backend:
+              service:
+                name: queue
+                port:
+                  number: 6060

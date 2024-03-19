@@ -18,9 +18,10 @@ spec:
         image: jobico/recorder:latest
         imagePullPolicy: Never
         ports:
-          - containerPort: 50054
-            hostPort: 50054
-            protocol: TCP
+        - name: api
+          containerPort: 50054
+        - name: pprof
+          containerPort: 6060
         volumeMounts:
           - name: recorder-data
             mountPath: /usr/share/jobico/recorder
@@ -128,8 +129,12 @@ spec:
   selector:
     app: recorder
   ports:
-    - name: "50054"
+    - name: api
       port: 50054
+      targetPort: api
+    - name: pprof
+      port: 6060
+      targetPort: pprof
   type: ClusterIP
 
 ---
@@ -140,7 +145,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-  name: recorder-ingress
+  name: recorder-ingress-grpc
   namespace: jobico
 spec:
   ingressClassName: nginx
@@ -159,3 +164,28 @@ spec:
                 name: recorder
                 port:
                   number: 50054
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  name: recorder-ingress-http
+  namespace: jobico
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - recorder
+      secretName: recorder-cert
+  rules:
+    - host: recorder
+      http:
+        paths:
+          - path: /debug/
+            pathType: Prefix
+            backend:
+              service:
+                name: recorder
+                port:
+                  number: 6060                

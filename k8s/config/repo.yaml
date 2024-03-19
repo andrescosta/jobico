@@ -20,9 +20,10 @@ spec:
           image: jobico/repo:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 50053
-              hostPort: 50053
-              protocol: TCP
+          - name: api
+            containerPort: 50053
+          - name: pprof
+            containerPort: 6060
           volumeMounts:
             - name: repo-data
               mountPath: /usr/share/jobico/repo
@@ -124,8 +125,12 @@ spec:
   selector:
     app: repo
   ports:
-    - port: 50053
-      protocol: TCP      
+    - name: api
+      port: 50053
+      targetPort: api
+    - name: pprof
+      port: 6060
+      targetPort: pprof
   type: ClusterIP
 
 ---
@@ -136,7 +141,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-  name: repo-ingress
+  name: repo-ingress-grpc
   namespace: jobico
 spec:
   ingressClassName: nginx
@@ -155,3 +160,31 @@ spec:
                 name: repo
                 port:
                   number: 50053
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  name: repo-ingress-http
+  namespace: jobico
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - repo
+      secretName: repo-cert
+  rules:
+    - host: repo
+      http:
+        paths:
+          - path: /debug/
+            pathType: Prefix
+            backend:
+              service:
+                name: repo
+                port:
+                  number: 6060
+

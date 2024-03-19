@@ -19,8 +19,8 @@ data:
   ## metadata
   metadata.enabled: "false"
   ## profiling
-  pprof.addr: "localhost:6060"
-  prof.enabled: "false"
+  pprof.addr: ":6060"
+  prof.enabled: "true"
   ## queue configs
   max.queue.errors: "2"
   ## executor configs
@@ -31,13 +31,13 @@ data:
   ## repo configs
   repo.dir: "./files"
   ## Obs configs
-  obs.enabled: "true"
+  obs.enabled: "false"
   obs.exporter.trace.grpc.host: "jaeger:4317"
   obs.exporter.metrics.http.host: "prometheus:9090"
   obs.exporter.metrics.host.path: "/api/v1/otlp/v1/metrics"
   obs.metrics.host: "true"
   obs.metrics.runtime: "true"
   ## Logs configs
-  log.level: "0"
+  log.level: "1"
   log.console.enabled: "true"
   log.file.enabled: "false"

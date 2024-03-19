@@ -11,21 +11,22 @@ ENV_CMD = ./build/env.sh
 LINT_INSTALL_CMD = curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b $(go env GOPATH)/bin v1.56.1
 X509 = ./hacks/cert/create.sh
 X509Install = ./hacks/cert/add.sh
-DO_SLEEP = sleep 1
+#DO_SLEEP = sleep 1
 GO_TEST_CMD = CGO_ENABLED=1 go test
 CERTS_DIR_CMD = mkdir -p ./k8s/certs
 CERTS_CMD = openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout ./k8s/certs/$(SVC).key -out ./k8s/certs/$(SVC).crt -subj "/CN=$(SVC)/O=$(SVC)" -addext "subjectAltName = DNS:$(SVC)"
 WAITING_INGS_CMD = ./hacks/waiting.sh
 INSTALL_PODMAN_CMD = sudo apt-get update;sudo apt-get -y install podman
 GO_VERSION = "1.22.1"
-
+DASHBORD_CMD = "./bin/dashboard"
 ifeq ($(OS),Windows_NT)
+	DASHBORD_CMD = "./bin/dashboard.exe"
 ifneq ($(MSYSTEM), MSYS)
 	MKDIR_REPO_CMD = pwsh -noprofile -command "new-item reports -ItemType Directory -Force -ErrorAction silentlycontinue | Out-Null"
 	MKDIR_BIN_CMD = pwsh -noprofile -command "new-item bin -ItemType Directory -Force -ErrorAction silentlycontinue | Out-Null"
 	BUILD_CMD = pwsh -noprofile -command ".\build\build.ps1"
 	ENV_CMD = pwsh -noprofile -command ".\build\env.ps1"
-	DO_SLEEP = pwsh -noprofile -command "Start-Sleep 1"
+#	DO_SLEEP = pwsh -noprofile -command "Start-Sleep 1"
 	X509 = pwsh -noprofile -command ".\hacks\cert\create.bat"
 	X509Install = pwsh -noprofile -command ".\hacks\cert\add.bat"
 	LINT_INSTALL_CMD = winget install golangci-lint
@@ -37,7 +38,7 @@ ifneq ($(MSYSTEM), MSYS)
 endif
 endif
 
-# Init machine
+# Install machine deps
 .PHONY: init-windows init-ubuntu
 
 init-windows:
@@ -53,6 +54,7 @@ dep:
 	@go install mvdan.cc/gofumpt@latest
 	@go install golang.org/x/vuln/cmd/govulncheck@latest
 	@$(LINT_INSTALL_CMD)
+	@go install github.com/divan/expvarmon@latest
 
 ## Release
 .PHONY: init-release
@@ -82,7 +84,7 @@ lint:
 vuln:
 	@govulncheck ./...
 
-## Tests
+## In-memory E2E Tests
 .PHONY: init-coverage test
 
 init-coverage:
@@ -97,7 +99,7 @@ test-coverage: init-coverage
 test-html: test_coverage
 	go tool cover -html=./reports/coverage.out
 
-## Performance
+## Performance tests
 .PHONY: k6 perf1/docker perf2/docker perf1/k8s perf2/k8s
 
 k6: 
@@ -145,9 +147,9 @@ docker-down:
 docker-stop:
 	docker compose -f .\compose\compose.yml stop
 
-## kubernetes targets 
+# Kubernetes 
 
-### Kind cluster
+## Kind cluster
 .PHONY: kind kind-delete kind-cluster list-images
 
 kind: kind-cluster ingress docker-images load-images wait-ingress deploy-all
@@ -164,8 +166,23 @@ ingress:
 	@kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
 wait-ingress:
-	@$(DO_SLEEP) 
+#@$(DO_SLEEP) 
 	@kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+
+## Container images
+.PHONY: docker-images podman-images
+
+podman-build: podman-images load-images
+
+docker-images: $(TARGETS:%=docker-images/%)
+docker-images/%: SVC=$*
+docker-images/%:
+	@docker build -f compose/Dockerfile --target $(SVC) -t jobico/$(SVC) . 
+
+podman-images: $(TARGETS:%=podman-images/%)
+podman-images/%: SVC=$*
+podman-images/%:
+	@podman build -f compose/Dockerfile --target $(SVC) -t jobico/$(SVC) . 
 
 load-images: $(TARGETS:%=load-images/%)
 load-images/%: SVC=$*
@@ -180,29 +197,19 @@ list-images:
 tag-images: $(TARGETS:%=tag-images/%)
 tag-images/%: SVC=$*
 tag-images/%:
-		@docker exec -it jobico-control-plane ctr --namespace=k8s.io image tag localhost/jobico/$(SVC):latest docker.io/jobico/$(SVC):latest
+		@podman exec -it jobico-control-plane ctr --namespace=k8s.io image tag localhost/jobico/$(SVC):latest docker.io/jobico/$(SVC):latest
 
-### Container images
-.PHONY: docker-images podman-images
-
-docker-images: $(TARGETS:%=docker-images/%)
-docker-images/%: SVC=$*
-docker-images/%:
-	@docker build -f compose/Dockerfile --target $(SVC) -t jobico/$(SVC) . 
-
-podman-images: $(TARGETS:%=podman-images/%)
-podman-images/%: SVC=$*
-podman-images/%:
-	@podman build -f compose/Dockerfile --target $(SVC) -t jobico/$(SVC) . 
-
-### K8s manifests
+## K8s manifests
 .PHONY: deploy-all deploy
 
-deploy-all: base kube-create-certs apply-supportmanifests apply-manifests
+deploy-all: apply-base-manifests kube-create-certs apply-supportmanifests apply-manifests
 
-deploy: base manifests
+deploy: apply-base-manifests kube-create-certs apply-manifests
 
-base:
+delete-namespace:
+	@kubectl delete -f .\k8s\config\namespace.yaml
+
+apply-base-manifests:
 	@kubectl apply -f ./k8s/config/namespace.yaml
 	@kubectl apply -f ./k8s/config/configmap.yaml
 
@@ -234,18 +241,10 @@ rollback-support-manifests/%: SVC=$*
 rollback-support-manifests/%:
 	@kubectl delete -f ./k8s/config/$(SVC).yaml
 
-create-certs: create-certs-dir $(ALL_TARGETS:%=create-certs/%)
-create-certs/%: SVC=$*
-create-certs/%:
-	@$(CERTS_CMD)
-
-create-certs-dir:
-	@$(CERTS_DIR_CMD)
-
 wait-ings:
 	@$(WAITING_INGS_CMD)
 
-# Podman (local environment)
+## Podman initialization
 .PHONY: podman-init podman-start podman-stop podman-ssh podman-install
 
 podman-install:
@@ -267,8 +266,16 @@ podman-stop:
 podman-ssh:
 	@podman machine ssh
 
-# Certificates management for the local store
-.PHONY: add-certs-linux add-certs-windows remove-certs-windows remove-certs-linux
+## Certificates management for the local store
+.PHONY: add-certs-linux add-certs-windows remove-certs-windows remove-certs-linux create-certs
+
+create-certs: create-certs-dir $(ALL_TARGETS:%=create-certs/%)
+create-certs/%: SVC=$*
+create-certs/%:
+	@$(CERTS_CMD)
+
+create-certs-dir:
+	@$(CERTS_DIR_CMD)
 
 add-certs-linux:
 	@sudo cp ./k8s/certs/*.crt /usr/local/share/ca-certificates
@@ -290,3 +297,13 @@ remove-certs-linux/%: SVC=$*
 remove-certs-linux/%:
 	@sudo rm /etc/ssl/certs/$(SVC).pem
 	@sudo rm /usr/local/share/ca-certificates/$(SVC).crt
+
+# Obs
+.PHONY: expvarmon
+expvarmon-k8s:
+	@expvarmon -ports="https://ctl:443,https://repo:443,https://exec:443,https://queue:443,https://recorder:443"
+expvarmon-local:
+	@expvarmon -ports="ctl:6060,repo:6565,exec:8585,queue:6363,recorder:6464"
+
+dashboard-k8s:
+	@$(DASHBORD_CMD) -sync -debug --env:ctl.host=ctl:443 --env:repo.host=repo:443 --env:recorder.host=recorder:443 --env:listener.host=listener:443 --env:executor.host=exec:443

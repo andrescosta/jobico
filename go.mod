@@ -3,13 +3,14 @@ module github.com/andrescosta/jobico
 go 1.21.4
 
 require (
-	github.com/andrescosta/goico v0.6.2
+	github.com/andrescosta/goico v0.6.3-0.20240317162727-c2f9d7281c77
 	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/gorilla/mux v1.8.1
 	github.com/nxadm/tail v1.4.11
 	github.com/rivo/tview v0.0.0-20240307173318-e804876934a1
 	github.com/rs/zerolog v1.32.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
+	github.com/tprasadtp/go-autotune v0.0.0-20240308193311-1a1576f2de62
 	go.uber.org/goleak v1.3.0
 	google.golang.org/grpc v1.62.1
 	google.golang.org/protobuf v1.33.0
@@ -61,7 +62,6 @@ require (
 	github.com/tetratelabs/wazero v1.6.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.13 // indirect
 	github.com/tklauser/numcpus v0.7.0 // indirect
-	github.com/tprasadtp/go-autotune v0.0.0-20240308193311-1a1576f2de62 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.49.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect

@@ -10,7 +10,6 @@ require (
 	github.com/rivo/tview v0.0.0-20240307173318-e804876934a1
 	github.com/rs/zerolog v1.32.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
-	github.com/tprasadtp/go-autotune v0.0.0-20240308193311-1a1576f2de62
 	go.uber.org/goleak v1.3.0
 	google.golang.org/grpc v1.62.1
 	google.golang.org/protobuf v1.33.0

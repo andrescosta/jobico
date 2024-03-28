@@ -4,7 +4,7 @@ metadata:
   name: listener
   namespace: jobico
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: listener
@@ -114,6 +114,10 @@ spec:
               name: jobico-config
               key: jobs.metrics.runtime
               optional: true        
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
 ---
 apiVersion: v1
 kind: Service

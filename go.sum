@@ -1,9 +1,5 @@
 github.com/DataDog/zstd v1.5.5 h1:oWf5W7GtOLgp6bciQYDmhHHjdhYkALu6S/5Ni9ZgSvQ=
 github.com/DataDog/zstd v1.5.5/go.mod h1:g4AWEaM3yOg3HYfnJ3YIawPnVdXJh9QME85blwSAmyw=
-github.com/andrescosta/goico v0.6.2 h1:zeErav3C4VwimXIB91Gqac2U0eTbVj46+RlmlATq+UI=
-github.com/andrescosta/goico v0.6.2/go.mod h1:NPEBCwKuNLtjq3NVWJ/ScdFh43M0JYSbIq4n1xRusT0=
-github.com/andrescosta/goico v0.6.3-0.20240317162727-c2f9d7281c77 h1:DSVdxIk8BdXjSx+Rd3FHvguoEPARCWjUogwa/9rqG9w=
-github.com/andrescosta/goico v0.6.3-0.20240317162727-c2f9d7281c77/go.mod h1:RhYc8nmPwc/iJomgfR//9vEAPWA9YOxcRv+JOyXiijQ=
 github.com/andrescosta/goico v0.6.3-0.20240319145627-c5321e08c4fe h1:tOG2AZeUut6SMFMZiZcrrFRFWI0t10FbWbXU99LK0xY=
 github.com/andrescosta/goico v0.6.3-0.20240319145627-c5321e08c4fe/go.mod h1:RhYc8nmPwc/iJomgfR//9vEAPWA9YOxcRv+JOyXiijQ=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
@@ -147,8 +143,6 @@ github.com/tklauser/go-sysconf v0.3.13/go.mod h1:zwleP4Q4OehZHGn4CYZDipCgg9usW5I
 github.com/tklauser/numcpus v0.6.1/go.mod h1:1XfjsgE2zo8GVw7POkMbHENHzVg3GzmoZ9fESEdAacY=
 github.com/tklauser/numcpus v0.7.0 h1:yjuerZP127QG9m5Zh/mSO4wqurYil27tHrqwRoRjpr4=
 github.com/tklauser/numcpus v0.7.0/go.mod h1:bb6dMVcj8A42tSE7i32fsIUCbQNllK5iDguyOZRUzAY=
-github.com/tprasadtp/go-autotune v0.0.0-20240308193311-1a1576f2de62 h1:Dr8ovw7qSRTZm+4yFj9z0GCo/XR7qygZzuK+qFp9NSw=
-github.com/tprasadtp/go-autotune v0.0.0-20240308193311-1a1576f2de62/go.mod h1:LxRnAIHF9esQNcAkWXD4c4lFlP99NwCXfsnifrmzRKI=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=

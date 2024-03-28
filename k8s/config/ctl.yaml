@@ -97,7 +97,11 @@ spec:
             configMapKeyRef:
               name: jobico-config
               key: jobs.metrics.runtime
-              optional: true        
+              optional: true
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
         - name: workdir
           value: "/usr/share/jobico/ctl"
   volumeClaimTemplates:

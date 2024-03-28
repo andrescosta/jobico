@@ -138,6 +138,10 @@ spec:
               name: jobico-config
               key: metadata.enabled
               optional: true        
+        - name: GOMAXPROCS
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.cpu
 ---
 apiVersion: v1
 kind: Service
